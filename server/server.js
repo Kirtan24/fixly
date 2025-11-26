@@ -33,7 +33,7 @@ const corsOptions = {
     "http://localhost:5000",
     "http://localhost:3000",
     "https://fixlyhome.vercel.app",
-    "fixly-frontend-alb-1072021984.ap-south-1.elb.amazonaws.com",
+    "http://fixly-backend-alb-691348494.ap-south-1.elb.amazonaws.com",
   ],
   credentials: true,
   optionsSuccessStatus: 200,
