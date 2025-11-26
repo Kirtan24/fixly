@@ -19,9 +19,8 @@ phases:
       # Set region properly
       - export AWS_DEFAULT_REGION=$AWS_REGION
 
-      # Login to ECR
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION \
-        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # Login to ECR (FIXED)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
       # Create dynamic image tag
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
@@ -71,13 +70,8 @@ phases:
       # -------------------- ECS Image Definitions --------------------
       - echo "Creating imagedefinitions files..."
 
-      # Backend imagedefinition
-      - printf '[{"name":"backend","imageUri":"%s"}]' "$BACKEND_REPO_URI:$IMAGE_TAG" \
-        > imagedefinitions-backend.json
-
-      # Frontend imagedefinition
-      - printf '[{"name":"frontend","imageUri":"%s"}]' "$FRONTEND_REPO_URI:$IMAGE_TAG" \
-        > imagedefinitions-frontend.json
+      - printf '[{"name":"backend","imageUri":"%s"}]' "$BACKEND_REPO_URI:$IMAGE_TAG" > imagedefinitions-backend.json
+      - printf '[{"name":"frontend","imageUri":"%s"}]' "$FRONTEND_REPO_URI:$IMAGE_TAG" > imagedefinitions-frontend.json
 
       - echo "imagedefinitions-backend.json:"
       - cat imagedefinitions-backend.json
