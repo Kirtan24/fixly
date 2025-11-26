@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <circle cx="16" cy="16" r="15" fill="url(#paint0_linear)" />
+  
+  <!-- F letter -->
+  <path d="M10 12H18M10 12V20M10 16H16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8A91B5"/>
+      <stop offset="1" stop-color="#A6B8BC"/>
+    </linearGradient>
+  </defs>
+</svg>

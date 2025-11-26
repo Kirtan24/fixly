@@ -1,0 +1,90 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "ap-south-1"
+    ACCOUNT_ID: "526056014097"
+    CLUSTER_NAME: "fixly-cluster"
+    ECR_REPO_FRONTEND: "fixly-frontend"
+    ECR_REPO_BACKEND: "fixly-backend"
+    FRONTEND_SERVICE: "fixly-frontend-service"
+    BACKEND_SERVICE: "fixly-backend-service"
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging into Amazon ECR..."
+      - aws --version
+
+      # Set region properly
+      - export AWS_DEFAULT_REGION=$AWS_REGION
+
+      # Login to ECR
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION \
+        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+      # Create dynamic image tag
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+      # Repo URIs
+      - BACKEND_REPO_URI="$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_BACKEND"
+      - FRONTEND_REPO_URI="$ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_FRONTEND"
+
+      - echo "Backend Repo URI: $BACKEND_REPO_URI"
+      - echo "Frontend Repo URI: $FRONTEND_REPO_URI"
+
+  build:
+    commands:
+      - echo "Build started on $(date)"
+
+      # -------------------- BACKEND --------------------
+      - echo "Building backend Docker image..."
+      - cd server
+      - docker build -t $ECR_REPO_BACKEND:latest .
+      - docker tag $ECR_REPO_BACKEND:latest $BACKEND_REPO_URI:latest
+      - docker tag $ECR_REPO_BACKEND:latest $BACKEND_REPO_URI:$IMAGE_TAG
+      - cd ..
+
+      # -------------------- FRONTEND --------------------
+      - echo "Building frontend Docker image..."
+      - cd client
+      - docker build -t $ECR_REPO_FRONTEND:latest .
+      - docker tag $ECR_REPO_FRONTEND:latest $FRONTEND_REPO_URI:latest
+      - docker tag $ECR_REPO_FRONTEND:latest $FRONTEND_REPO_URI:$IMAGE_TAG
+      - cd ..
+
+  post_build:
+    commands:
+      - echo "Build completed on $(date)"
+
+      # -------------------- Push Backend --------------------
+      - echo "Pushing backend images..."
+      - docker push $BACKEND_REPO_URI:latest
+      - docker push $BACKEND_REPO_URI:$IMAGE_TAG
+
+      # -------------------- Push Frontend --------------------
+      - echo "Pushing frontend images..."
+      - docker push $FRONTEND_REPO_URI:latest
+      - docker push $FRONTEND_REPO_URI:$IMAGE_TAG
+
+      # -------------------- ECS Image Definitions --------------------
+      - echo "Creating imagedefinitions files..."
+
+      # Backend imagedefinition
+      - printf '[{"name":"backend","imageUri":"%s"}]' "$BACKEND_REPO_URI:$IMAGE_TAG" \
+        > imagedefinitions-backend.json
+
+      # Frontend imagedefinition
+      - printf '[{"name":"frontend","imageUri":"%s"}]' "$FRONTEND_REPO_URI:$IMAGE_TAG" \
+        > imagedefinitions-frontend.json
+
+      - echo "imagedefinitions-backend.json:"
+      - cat imagedefinitions-backend.json
+      - echo "imagedefinitions-frontend.json:"
+      - cat imagedefinitions-frontend.json
+
+artifacts:
+  files:
+    - imagedefinitions-backend.json
+    - imagedefinitions-frontend.json

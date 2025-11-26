@@ -1,0 +1,6 @@
+@import './styles/tailwind.css';
+
+/* Additional global styles can be added here if needed */
+body {
+  overflow-x: hidden;
+}

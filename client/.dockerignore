@@ -1,0 +1,33 @@
+# Ignore node modules
+node_modules
+
+# Ignore build artifacts
+dist
+build
+
+# Ignore env files
+.env
+.env.local
+.env.*
+
+# Ignore logs and debug
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+# OS and Editor files
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+
+# Git metadata
+.git
+.gitignore
+
+# Coverage
+coverage/
+
+# prevent copying other artifacts
+docker-compose.yml
